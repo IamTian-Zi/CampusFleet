@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CampusFleet · 动态重规划</title><link rel="stylesheet" href="/style.css"></head>
+<body><header><div class="brand"><span class="brandmark">✳</span><div><strong>CampusFleet</strong><small>D* Lite 动态道路演示</small></div></div><a class="page-link" href="/">返回调度台</a></header>
+<main style="max-width:1100px;margin:auto;padding:24px">
+<h1>道路变化时重新规划</h1><p>先规划单台机器人的室外路线，再封闭或恢复道路格。D* Lite 保留前次搜索状态，从当前位置更新剩余路线。</p>
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:18px 0">
+<label>起点 X <input id="startX" type="number" value="16" min="0"></label><label>起点 Y <input id="startY" type="number" value="34" min="0"></label>
+<label>终点 X <input id="goalX" type="number" value="385" min="0"></label><label>终点 Y <input id="goalY" type="number" value="230" min="0"></label>
+<button id="begin" class="primary">开始规划</button></div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:18px 0">
+<label>道路格 X <input id="cellX" type="number" value="180" min="0"></label><label>道路格 Y <input id="cellY" type="number" value="36" min="0"></label>
+<button id="block" class="secondary" disabled>封闭道路格</button><button id="unblock" class="secondary" disabled>恢复道路格</button><button id="advance" class="secondary" disabled>机器人前进一步</button></div>
+<p id="dstarStatus" class="status" role="status">正在加载地图…</p>
+<canvas id="dstarMap" width="1100" height="570" style="width:100%;border-radius:16px;background:#eef5fb"></canvas>
+</main><script src="/scene3d.js"></script><script src="/dstar.js"></script></body></html>

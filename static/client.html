@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CampusFleet · 用户客户端</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header><div class="brand"><span class="brandmark">✳</span><div><strong>CampusFleet</strong><small>校园配送客户端</small></div></div></header>
+<section id="authPanel" style="max-width:440px;margin:30px auto;padding:22px;background:white;border-radius:16px">
+  <h1>登录 CampusFleet</h1><p>登录后可在电脑和手机查看自己的历史订单。</p>
+  <label>用户名<input id="authUsername" autocomplete="username" placeholder="3–32 位字母、数字或下划线"></label>
+  <label>密码<input id="authPassword" type="password" autocomplete="current-password" placeholder="至少 8 个字符"></label>
+  <div style="display:flex;gap:10px;margin-top:16px"><button id="authLogin" class="primary" type="button">登录</button><button id="authRegister" class="secondary" type="button">注册</button></div>
+  <p id="authError" role="alert"></p>
+</section>
+<main id="clientMain" class="client-main" hidden>
+  <div><span id="signedInName"></span> <button id="authLogout" class="secondary" type="button">退出登录</button></div>
+  <section class="client-intro"><h1>发起校园配送</h1><p>一键申请，查看路线并完成模拟付款。</p></section>
+  <section class="task-panel">
+    <div class="task-head"><h2>配送请求</h2><p>从校园取件点送至建筑内的三楼房间</p></div>
+    <div class="task-form">
+      <label>配送物品<select id="taskItem"><option>教材</option><option>文件</option><option>包裹</option></select></label>
+      <label>目标建筑<select id="taskBuilding"></select></label>
+      <label>目标房间<select id="taskRoom"><option value="A">房间 A</option><option value="B">房间 B</option></select></label>
+      <button id="taskCreate" class="primary" disabled>一键申请配送</button>
+    </div>
+    <div id="taskStatus" class="status" role="status">请选择目标建筑与房间。</div>
+    <div id="taskReceipt" class="task-receipt" hidden></div>
+    <button id="paymentOpen" class="secondary" type="button" hidden>查看模拟付款</button>
+    <section id="taskTracking" class="task-tracking" aria-label="本订单配送机器人" hidden>
+      <div class="task-tracking-head"><strong id="taskRobot">配送机器人</strong><span id="taskPhase">待出发</span></div>
+      <p id="taskPosition">位置待更新</p>
+      <progress id="taskProgress" max="100" value="0" aria-label="配送进度"></progress>
+      <div class="task-tracking-foot"><span id="taskPercent">0%</span><span id="taskRemaining">预计剩余时间待更新</span></div>
+    </section>
+    <div class="task-playback"><button id="taskPlay" class="secondary" disabled>播放配送过程</button><input id="taskTimeline" type="range" min="0" max="0" value="0" disabled aria-label="配送任务时间轴"><output id="taskTick">第 0 步</output></div>
+    <canvas id="taskCanvas" width="900" height="480" aria-label="本订单机器人在校园室外路线的位置"></canvas>
+  </section>
+  <section class="client-orders"><h2>我的模拟任务</h2><div id="taskHistory" class="task-history"></div></section>
+</main>
+<dialog id="paymentDialog" class="payment-dialog" aria-labelledby="paymentTitle">
+  <div class="payment-head"><div><span class="eyebrow">CAMPUSFLEET · 模拟付款</span><h2 id="paymentTitle">确认配送订单 <span class="demo-badge">仅供展示使用</span></h2></div><button id="paymentClose" class="payment-close" type="button" aria-label="关闭付款窗口">×</button></div>
+  <div class="payment-body">
+    <div class="payment-details">
+      <div class="payment-fields"><p>订单 ID <strong id="paymentOrder"></strong></p><p>申请时间 <strong id="paymentTime"></strong></p><p>用户 ID <strong id="paymentUser"></strong></p><p>目标位置 <strong id="paymentDestination"></strong></p></div>
+      <div class="payment-route-head"><strong>室外立体规划路线</strong><button id="paymentReplan" class="secondary" type="button">重新规划路线</button></div>
+      <canvas id="paymentMap" width="760" height="390" aria-label="本订单室外立体规划路线"></canvas>
+      <p id="paymentRouteNote" class="payment-note"></p>
+    </div>
+    <div class="payment-side"><p class="payment-label">模拟应付</p><strong id="paymentAmount" class="payment-amount"></strong>
+      <canvas id="paymentQr" width="188" height="188" aria-label="指向订单网页的二维码"></canvas>
+      <a id="paymentLink" class="payment-link" target="_blank" rel="noopener noreferrer"></a>
+      <p id="paymentNetworkNote" class="payment-note" role="status"></p>
+      <p class="payment-note"><strong>仅供展示使用。</strong>二维码仅打开 CampusFleet 订单网页，不会发起真实付款。</p>
+      <div class="payment-providers"><span class="provider alipay"><b>支</b> Alipay</span><span class="provider applepay"><b aria-hidden="true"></b> Apple Pay</span><span>等方式 · 演示标识</span></div>
+      <button id="taskPay" class="payment-confirm" type="button">确认扣款</button><p id="paymentStatus" class="payment-status" role="status">仅供展示使用 · 不会实际扣款。</p>
+    </div>
+  </div>
+</dialog>
+<script src="/scene3d.js"></script><script src="/qr.js"></script><script src="/tasks.js"></script>
+</body>
+</html>

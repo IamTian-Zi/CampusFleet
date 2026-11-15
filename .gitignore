@@ -1,0 +1,20 @@
+# Local configuration and data
+.env
+.env.*
+!.env.example
+*.sqlite3
+*.db
+__pycache__/
+*.py[cod]
+.venv*/
+node_modules/
+.expo/
+build/
+dist/
+*.pyd
+*.so
+*.dylib
+*.dll
+mobile/android/
+mobile/ios/
+output/

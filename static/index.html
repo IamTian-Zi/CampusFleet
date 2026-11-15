@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CampusFleet · 多机器人协同规划</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header><div class="brand"><span class="brandmark">✳</span><div><strong>CampusFleet</strong><small>调度控制台</small></div></div><div><a class="page-link" href="/dstar">D* Lite 动态重规划</a> <a class="page-link" href="/client">打开用户客户端</a></div></header>
+<main>
+  <section class="intro"><div><h1>穿过立体校园，<br><em>让每台机器人有序到达。</em></h1><p>桥面、坡道与地面道路上的协同规划。</p></div><div class="intro-note"><b>420 × 280 米虚拟校园</b><small>桥高 6 米 · 同步时间轴</small></div></section>
+  <div class="workspace">
+    <section class="map-panel">
+      <div class="panel-top"><h2>星河校区 <span id="mapSize"></span></h2><select id="view" aria-label="地图视角"><option value="3d">三维投影</option><option value="top">俯视编辑</option></select><span id="coords">每格 1 米</span></div>
+      <div class="map-wrap"><canvas id="map" aria-label="校园地图。先选择机器人，再选择设置起点、终点或临时障碍模式，点击地图编辑。"></canvas></div>
+      <div class="map-footer"><div class="legend"><span><i class="building"></i>建筑</span><span><i class="water"></i>水池</span><span><i class="vegetation"></i>绿地 / 花坛</span><span><i class="road"></i>道路（黄虚线）</span><span><i class="expanded"></i>安全膨胀</span><span>→ 单向通道</span><span>↔ 双向通道</span><span>圆点 起点 / 方框 终点</span></div></div>
+      <div class="layer-controls"><label><input id="grid" type="checkbox"> 网格</label><label><input id="inflation" type="checkbox" checked> 膨胀范围</label><label><input id="routes" type="checkbox" checked> 全部路线</label></div>
+      <div class="playback"><button id="play" class="secondary" disabled>播放</button><input id="timeline" type="range" min="0" max="0" value="0" disabled aria-label="回放时间步"><output id="tick">第 0 / 0 步</output></div>
+      <div id="results" aria-live="polite"></div>
+    </section>
+    <aside>
+      <div class="side-head"><h2>协同规划控制台</h2><p>选择预设或编辑各台机器人的起终点。</p></div>
+      <label class="field">地图场景<select id="scenario"></select></label>
+      <label class="field">规划方法<select id="method"><option value="cbs">CBS · 冲突搜索</option><option value="priority">优先级规划 · 按列表顺序</option><option value="single">单机器人 A* · 当前选中机器人</option></select></label>
+      <label class="speed-option"><input id="slowdown" type="checkbox" checked> 允许分段减速（正常 / 半速）</label>
+      <label class="speed-option"><input id="terrain" type="checkbox" checked> 启用立体路面约束</label>
+      <label class="field">端点所在路面<select id="surface"><option value="ground">地面</option><option value="bridge">桥面 / 坡道</option></select></label>
+      <label class="field">当前机器人<select id="agent"></select></label>
+      <div class="row"><button id="add" class="secondary" disabled>添加机器人</button><button id="remove" class="secondary" disabled>移除当前机器人</button></div>
+      <div class="modes"><button class="mode active" data-mode="start">设置起点</button><button class="mode" data-mode="goal">设置终点</button><button class="mode wide" data-mode="obstacle">添加 / 移除临时障碍</button></div>
+      <div class="points"><div><small>起点</small><b id="startText">—</b></div><span>→</span><div><small>终点</small><b id="goalText">—</b></div></div>
+      <div class="params">
+        <label>统一机器人半径 / 米<input id="radius" type="number" value="0.3" min="0" max="3" step="0.1"></label>
+        <label>安全余量 / 米<input id="margin" type="number" value="0.2" min="0" max="3" step="0.1"></label>
+        <label>车身高度 / 米<input id="height" type="number" value="1" min="0.1" max="4" step="0.1"></label>
+        <label>最大坡度 / 度<input id="slope" type="number" value="20" min="0" max="45" step="1"></label>
+        <label>移动行人数量<input id="pedestrians" type="number" value="4" min="0" max="15" step="1"></label>
+        <label>行人随机种子<input id="pedestrianSeed" type="number" value="1" min="0" max="2147483647" step="1"></label>
+        <label>每台最大时间步<input id="horizon" type="number" value="400" min="1" max="800" step="1"></label>
+        <label>计算时限 / 秒<input id="limit" type="number" value="8" min="1" max="20" step="1"></label>
+      </div>
+      <p class="param-note">行人在地面道路随机行走。机器人优先在原路线附近减速、等待或绕行，并检查整段移动的间距。</p>
+      <button id="search" class="primary" disabled>开始规划</button><button id="reset" class="secondary" disabled>重置当前场景</button>
+      <div id="status" class="status" role="status">正在加载地图…</div>
+      <div id="metrics" class="summary"></div>
+      <div id="speed" class="summary" role="status"></div>
+      <p class="footnote">机器人间检查整段移动中的最小间距。每个时间步约 1.414 秒，按速度上限 1 米/秒设定。模拟采用统一步长、瞬时转向。</p>
+    </aside>
+  </div>
+  <section class="indoor-panel">
+    <div class="indoor-head"><div><h2>建筑室内配送</h2><p>三层楼 · 两部楼梯 · 一部 8 人位电梯</p></div><div class="indoor-controls">
+      <label>建筑<select id="indoorBuilding"></select></label>
+      <label>候梯行人<input id="indoorCrowd" type="number" min="0" max="30" value="4"></label>
+      <label>随机种子<input id="indoorSeed" type="number" min="0" max="2147483647" value="1"></label>
+      <label><input id="indoorClimb" type="checkbox" checked> 机器人可爬楼梯</label>
+      <button id="indoorPlan" class="primary" disabled>规划室内配送</button>
+    </div></div>
+    <div class="indoor-toolbar"><label>查看楼层<select id="indoorFloor"><option value="1">一层</option><option value="2">二层</option><option value="3" selected>三层</option></select></label><button id="indoorPlay" class="secondary" disabled>播放</button><input id="indoorTimeline" type="range" min="0" max="0" value="0" disabled aria-label="室内回放时间步"><output id="indoorTick">第 0 步</output></div>
+    <canvas id="indoorCanvas" width="900" height="480" aria-label="室内楼层、电梯、楼梯与机器人回放"></canvas>
+    <div id="indoorStatus" class="status" role="status">选择建筑后可规划室内配送。</div>
+    <div id="indoorResults" class="summary"></div>
+  </section>
+  <section class="operator-panel">
+    <div class="operator-head"><h2>配送任务状态</h2><button id="operatorRefresh" class="secondary">刷新任务</button></div>
+    <div id="operatorTasks" role="status">正在读取任务…</div>
+  </section>
+  <footer><span>CAMPUSFLEET / PATH LAB</span><span>分层路面 · 圆柱车身 · 离散速度</span></footer>
+</main>
+<script src="/scene3d.js"></script><script src="/app.js"></script><script src="/indoor-scene.js"></script><script src="/indoor.js"></script><script src="/operator.js"></script>
+</body>
+</html>
